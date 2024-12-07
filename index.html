@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <style>
+        body {
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 240px);
+            gap: 18px;
+            max-width: 600px;
+        }
+
+        .card {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 120px;
+            background-color: #f0f0f0;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .card.flipped {
+            background-color: #fff;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Matching Game</title>
+</head>
+
+<body>
+    <div class="game-board"></div>
+    <script>
+        const numbers = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9];
+        numbers.sort(() => Math.random() - 0.5); // Shuffle the numbers
+        // Shuffle the numbers
+        let flippedCards = [];
+        let matchedCards = new Set(); // Use a Set to store matched cards for efficient lookup
+        let canFlip = true;
+
+        const gameBoard = document.querySelector('.game-board');
+
+        // Generate cards dynamically based on the shuffled numbers
+        numbers.forEach((number) => {
+            const card = createCard(number);
+            gameBoard.appendChild(card);
+        });
+
+        function createCard(number) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.number = number; // Store the card's number
+            card.textContent = 'Guess?!'; // Initially, display placeholder text
+            card.addEventListener('click', flipCard);
+            return card;
+        }
+
+        function flipCard() {
+            if (!canFlip || this.classList.contains('flipped') || flippedCards.length >= 2) {
+                return; // Prevent flipping if game is processing or the card is already flipped
+            }
+
+            this.classList.add('flipped');
+            this.textContent = this.dataset.number;
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            canFlip = false; // Prevent further flips during comparison
+            const [card1, card2] = flippedCards;
+
+            setTimeout(() => {
+                if (card1.dataset.number === card2.dataset.number) {
+                    matchedCards.add(card1); // Add matched cards to the set
+                    matchedCards.add(card2);
+
+                    // Check for win condition
+                    if (matchedCards.size === numbers.length) {
+                        alert("Congratulations! You won");
+                    }
+                } else {
+                    // If no match, reset cards
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    card1.textContent = 'Guess?!';
+                    card2.textContent = 'Guess?!';
+                }
+
+                // Reset for the next turn
+                flippedCards = [];
+                canFlip = true;
+            }, 1000);
+        }
+    </script>
+</body>
+
+</html>
